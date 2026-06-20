@@ -42,7 +42,7 @@ export function LandingPage({ isPlaying, onEnter }: LandingPageProps) {
               strokeClassName="landing-title-blast-stroke"
               fillClassName="landing-title-blast-fill"
             >
-              Matthew vs Jamilla
+              Matthew vs Jamila
             </GradientOutlineText>
           </div>
         </div>
