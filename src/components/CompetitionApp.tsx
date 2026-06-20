@@ -17,7 +17,7 @@ import {
 } from "@/lib/scoring";
 
 export function CompetitionApp() {
-  const { draft, updateDraft, resetDraft, hydrated } = useDraftState();
+  const { draft, updateDraft, resetDraft } = useDraftState();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
@@ -60,14 +60,6 @@ export function CompetitionApp() {
       },
     });
   };
-
-  if (!hydrated) {
-    return (
-      <div className="flex min-h-dvh items-center justify-center text-sm text-muted">
-        Loading…
-      </div>
-    );
-  }
 
   switch (draft.step) {
     case "landing":

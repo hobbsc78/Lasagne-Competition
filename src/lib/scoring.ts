@@ -1,6 +1,5 @@
 export const ORGANISER_EMAIL = "hobbsc78@gmail.com";
 export const AUDIO_PATH = "/audio/thats-amore-1.mp3";
-export const STORAGE_KEY = "lasagne-competition-draft";
 
 export const CATEGORIES = [
   {
