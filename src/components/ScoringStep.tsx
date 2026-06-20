@@ -2,7 +2,7 @@ import { CategoryInput } from "@/components/CategoryInput";
 import { ContestantToggle } from "@/components/ContestantToggle";
 import {
   CATEGORIES,
-  isDraftReadyForReview,
+  isDraftScoringComplete,
   type CategoryId,
   type ContestantId,
   type DraftState,
@@ -13,7 +13,7 @@ interface ScoringStepProps {
   draft: DraftState;
   onContestantChange: (contestant: ContestantId) => void;
   onScoreChange: (contestant: ContestantId, scores: Scores) => void;
-  onReview: () => void;
+  onContinue: () => void;
   onBack: () => void;
 }
 
@@ -21,7 +21,7 @@ export function ScoringStep({
   draft,
   onContestantChange,
   onScoreChange,
-  onReview,
+  onContinue,
   onBack,
 }: ScoringStepProps) {
   const activeScores = draft.scores[draft.activeContestant];
@@ -111,11 +111,11 @@ export function ScoringStep({
       <div className="fixed inset-x-0 bottom-0 border-t border-border bg-background/95 px-6 py-4 backdrop-blur">
         <button
           type="button"
-          onClick={onReview}
-          disabled={!isDraftReadyForReview(draft)}
+          onClick={onContinue}
+          disabled={!isDraftScoringComplete(draft)}
           className="mx-auto block w-full max-w-lg rounded-2xl bg-accent px-6 py-4 text-base font-semibold text-white shadow-lg shadow-amber-900/15 transition hover:bg-accent-dark disabled:cursor-not-allowed disabled:opacity-50"
         >
-          Review scores
+          Continue
         </button>
       </div>
     </section>

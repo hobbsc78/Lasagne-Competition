@@ -2,6 +2,7 @@ import {
   buildMailtoLink,
   calculateTotal,
   CATEGORIES,
+  HONOURABLE_MENTIONS,
   formatWeight,
   isDraftReadyForReview,
   isValidScore,
@@ -84,6 +85,29 @@ export function ReviewStep({ draft, onBack, onSubmit }: ReviewStepProps) {
       <div className="space-y-4">
         <ContestantSummary contestant="A" draft={draft} />
         <ContestantSummary contestant="B" draft={draft} />
+
+        <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+          <h2 className="mb-3 text-lg font-bold text-foreground">
+            Honourable mentions
+          </h2>
+          <ul className="space-y-2">
+            {HONOURABLE_MENTIONS.map((mention) => {
+              const winner = draft.honourableMentions[mention.id];
+
+              return (
+                <li
+                  key={mention.id}
+                  className="flex items-start justify-between gap-3 border-t border-zinc-800 pt-2 text-sm first:border-t-0 first:pt-0"
+                >
+                  <p className="font-medium">{mention.label}</p>
+                  <p className="font-semibold">
+                    {winner ? `Contestant ${winner}` : "—"}
+                  </p>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       </div>
 
       <div className="fixed inset-x-0 bottom-0 border-t border-border bg-background/95 px-6 py-4 backdrop-blur">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { HonourableMentionsStep } from "@/components/HonourableMentionsStep";
 import { JudgeNameStep } from "@/components/JudgeNameStep";
 import { LandingPage } from "@/components/LandingPage";
 import { ReviewStep } from "@/components/ReviewStep";
@@ -9,7 +10,8 @@ import { ThanksStep } from "@/components/ThanksStep";
 import { useDraftState } from "@/hooks/useDraftState";
 import {
   AUDIO_PATH,
-  isDraftReadyForReview,
+  isDraftScoringComplete,
+  isHonourableMentionsComplete,
   type ContestantId,
   type Scores,
 } from "@/lib/scoring";
@@ -89,12 +91,12 @@ export function CompetitionApp() {
             updateDraft({ activeContestant })
           }
           onScoreChange={handleScoreChange}
-          onReview={() => updateDraft({ step: "review" })}
+          onContinue={() => updateDraft({ step: "honourable" })}
           onBack={() => updateDraft({ step: "judge" })}
         />
       );
-    case "review":
-      if (!isDraftReadyForReview(draft)) {
+    case "honourable":
+      if (!isDraftScoringComplete(draft)) {
         return (
           <ScoringStep
             draft={draft}
@@ -102,8 +104,42 @@ export function CompetitionApp() {
               updateDraft({ activeContestant })
             }
             onScoreChange={handleScoreChange}
-            onReview={() => updateDraft({ step: "review" })}
+            onContinue={() => updateDraft({ step: "honourable" })}
             onBack={() => updateDraft({ step: "judge" })}
+          />
+        );
+      }
+
+      return (
+        <HonourableMentionsStep
+          draft={draft}
+          onChange={(honourableMentions) => updateDraft({ honourableMentions })}
+          onBack={() => updateDraft({ step: "scoring" })}
+          onContinue={() => updateDraft({ step: "review" })}
+        />
+      );
+    case "review":
+      if (!isDraftScoringComplete(draft)) {
+        return (
+          <ScoringStep
+            draft={draft}
+            onContestantChange={(activeContestant) =>
+              updateDraft({ activeContestant })
+            }
+            onScoreChange={handleScoreChange}
+            onContinue={() => updateDraft({ step: "honourable" })}
+            onBack={() => updateDraft({ step: "judge" })}
+          />
+        );
+      }
+
+      if (!isHonourableMentionsComplete(draft)) {
+        return (
+          <HonourableMentionsStep
+            draft={draft}
+            onChange={(honourableMentions) => updateDraft({ honourableMentions })}
+            onBack={() => updateDraft({ step: "scoring" })}
+            onContinue={() => updateDraft({ step: "review" })}
           />
         );
       }
@@ -111,7 +147,7 @@ export function CompetitionApp() {
       return (
         <ReviewStep
           draft={draft}
-          onBack={() => updateDraft({ step: "scoring" })}
+          onBack={() => updateDraft({ step: "honourable" })}
           onSubmit={() => updateDraft({ step: "thanks" })}
         />
       );

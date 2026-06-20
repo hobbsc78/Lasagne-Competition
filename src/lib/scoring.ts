@@ -41,20 +41,41 @@ export const CATEGORIES = [
   },
 ] as const;
 
+export const HONOURABLE_MENTIONS = [
+  {
+    id: "cheesePull",
+    label: "Best cheese pull",
+  },
+  {
+    id: "instaWorthy",
+    label: "Most Insta worthy",
+  },
+] as const;
+
 export type CategoryId = (typeof CATEGORIES)[number]["id"];
+export type HonourableMentionId = (typeof HONOURABLE_MENTIONS)[number]["id"];
 export type ContestantId = "A" | "B";
 
 export type Scores = Record<CategoryId, number | null>;
 
 export type ContestantScores = Record<ContestantId, Scores>;
 
-export type AppStep = "landing" | "judge" | "scoring" | "review" | "thanks";
+export type HonourableMentions = Record<HonourableMentionId, ContestantId | null>;
+
+export type AppStep =
+  | "landing"
+  | "judge"
+  | "scoring"
+  | "honourable"
+  | "review"
+  | "thanks";
 
 export interface DraftState {
   step: AppStep;
   judgeName: string;
   activeContestant: ContestantId;
   scores: ContestantScores;
+  honourableMentions: HonourableMentions;
 }
 
 export function createEmptyScores(): Scores {
@@ -68,6 +89,13 @@ export function createEmptyScores(): Scores {
   };
 }
 
+export function createEmptyHonourableMentions(): HonourableMentions {
+  return {
+    cheesePull: null,
+    instaWorthy: null,
+  };
+}
+
 export function createInitialDraft(): DraftState {
   return {
     step: "landing",
@@ -77,6 +105,7 @@ export function createInitialDraft(): DraftState {
       A: createEmptyScores(),
       B: createEmptyScores(),
     },
+    honourableMentions: createEmptyHonourableMentions(),
   };
 }
 
@@ -128,7 +157,7 @@ export function parseScoreInput(raw: string): number | null {
   return value;
 }
 
-export function isDraftReadyForReview(draft: DraftState): boolean {
+export function isDraftScoringComplete(draft: DraftState): boolean {
   return (
     draft.judgeName.trim().length > 0 &&
     isContestantComplete(draft.scores.A) &&
@@ -136,11 +165,28 @@ export function isDraftReadyForReview(draft: DraftState): boolean {
   );
 }
 
+export function isHonourableMentionsComplete(draft: DraftState): boolean {
+  return HONOURABLE_MENTIONS.every(
+    (mention) => draft.honourableMentions[mention.id] !== null,
+  );
+}
+
+export function isDraftReadyForReview(draft: DraftState): boolean {
+  return isDraftScoringComplete(draft) && isHonourableMentionsComplete(draft);
+}
+
+function isValidHonourableWinner(
+  value: unknown,
+): value is ContestantId {
+  return value === "A" || value === "B";
+}
+
 function isAppStep(value: unknown): value is AppStep {
   return (
     value === "landing" ||
     value === "judge" ||
     value === "scoring" ||
+    value === "honourable" ||
     value === "review" ||
     value === "thanks"
   );
@@ -158,6 +204,47 @@ function sanitizeScores(raw: unknown): Scores {
   return scores;
 }
 
+function sanitizeHonourableMentions(raw: unknown): HonourableMentions {
+  const mentions = createEmptyHonourableMentions();
+  if (!raw || typeof raw !== "object") return mentions;
+
+  for (const mention of HONOURABLE_MENTIONS) {
+    const value = (raw as HonourableMentions)[mention.id];
+    mentions[mention.id] = isValidHonourableWinner(value) ? value : null;
+  }
+
+  return mentions;
+}
+
+function resolveDraftStep(
+  step: AppStep,
+  draft: Omit<DraftState, "step">,
+): AppStep {
+  const scoringComplete = isDraftScoringComplete({
+    ...draft,
+    step,
+  });
+  const honourableComplete = isHonourableMentionsComplete({
+    ...draft,
+    step,
+  });
+
+  if (step === "thanks" || step === "review") {
+    if (!scoringComplete) {
+      return draft.judgeName.trim() ? "scoring" : "judge";
+    }
+    if (!honourableComplete) {
+      return "honourable";
+    }
+  }
+
+  if (step === "honourable" && !scoringComplete) {
+    return draft.judgeName.trim() ? "scoring" : "judge";
+  }
+
+  return step;
+}
+
 export function normalizeDraftState(raw: unknown): DraftState {
   const initial = createInitialDraft();
   if (!raw || typeof raw !== "object") return initial;
@@ -169,21 +256,23 @@ export function normalizeDraftState(raw: unknown): DraftState {
     A: sanitizeScores(data.scores?.A),
     B: sanitizeScores(data.scores?.B),
   };
+  const honourableMentions = sanitizeHonourableMentions(data.honourableMentions);
 
   let step = isAppStep(data.step) ? data.step : initial.step;
 
-  const draft: DraftState = {
-    step,
+  const draftWithoutStep: Omit<DraftState, "step"> = {
     judgeName,
     activeContestant,
     scores,
+    honourableMentions,
   };
 
-  if ((step === "review" || step === "thanks") && !isDraftReadyForReview(draft)) {
-    step = judgeName.trim() ? "scoring" : "judge";
-  }
+  step = resolveDraftStep(step, draftWithoutStep);
 
-  return { ...draft, step };
+  return {
+    step,
+    ...draftWithoutStep,
+  };
 }
 
 export function buildMailtoLink(draft: DraftState): string {
@@ -225,6 +314,18 @@ export function buildMailtoLink(draft: DraftState): string {
 
     lines.push("");
   }
+
+  lines.push("HONOURABLE MENTIONS");
+  lines.push("");
+
+  for (const mention of HONOURABLE_MENTIONS) {
+    const winner = draft.honourableMentions[mention.id];
+    if (!isValidHonourableWinner(winner)) continue;
+
+    lines.push(`${mention.label}: Contestant ${winner}`);
+  }
+
+  lines.push("");
 
   const subject = encodeURIComponent(`Lasagne Competition — ${judgeName}`);
   const body = encodeURIComponent(lines.join("\n"));
