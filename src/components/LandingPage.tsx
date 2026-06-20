@@ -5,9 +5,10 @@ import { anton, luckiestGuy } from "@/lib/fonts";
 interface LandingPageProps {
   isPlaying: boolean;
   onEnter: () => void;
+  onSkip: () => void;
 }
 
-export function LandingPage({ isPlaying, onEnter }: LandingPageProps) {
+export function LandingPage({ isPlaying, onEnter, onSkip }: LandingPageProps) {
   return (
     <section className="flex min-h-dvh flex-col items-center justify-center px-6 py-10">
       <div className="w-full max-w-sm">
@@ -57,9 +58,18 @@ export function LandingPage({ isPlaying, onEnter }: LandingPageProps) {
         </button>
 
         {isPlaying && (
-          <p className="mt-3 text-center text-sm text-muted">
-            Enjoy the music — scoring begins when the track ends.
-          </p>
+          <>
+            <button
+              type="button"
+              onClick={onSkip}
+              className="mt-3 w-full text-sm font-semibold text-muted underline-offset-4 transition hover:text-foreground hover:underline"
+            >
+              Skip
+            </button>
+            <p className="mt-3 text-center text-sm text-muted">
+              Enjoy the music — scoring begins when the track ends.
+            </p>
+          </>
         )}
       </div>
     </section>

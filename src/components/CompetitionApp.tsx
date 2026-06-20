@@ -52,6 +52,17 @@ export function CompetitionApp() {
     };
   };
 
+  const handleSkipIntro = () => {
+    const audio = audioRef.current;
+    if (!audio || !isPlaying) return;
+
+    audio.pause();
+    audio.currentTime = 0;
+    audio.onended = null;
+    setIsPlaying(false);
+    updateDraft({ step: "judge" });
+  };
+
   const handleScoreChange = (contestant: ContestantId, scores: Scores) => {
     updateDraft({
       scores: {
@@ -64,7 +75,11 @@ export function CompetitionApp() {
   switch (draft.step) {
     case "landing":
       return (
-        <LandingPage isPlaying={isPlaying} onEnter={handleEnterCompetition} />
+        <LandingPage
+          isPlaying={isPlaying}
+          onEnter={handleEnterCompetition}
+          onSkip={handleSkipIntro}
+        />
       );
     case "judge":
       return (
