@@ -1,3 +1,4 @@
+import Image from "next/image";
 import {
   HONOURABLE_MENTIONS,
   isHonourableMentionsComplete,
@@ -17,11 +18,15 @@ interface HonourableMentionsStepProps {
 function HonourableMentionCard({
   id,
   label,
+  imageSrc,
+  imageAlt,
   selected,
   onSelect,
 }: {
   id: HonourableMentionId;
   label: string;
+  imageSrc: string;
+  imageAlt: string;
   selected: ContestantId | null;
   onSelect: (winner: ContestantId) => void;
 }) {
@@ -31,33 +36,45 @@ function HonourableMentionCard({
     <div className="rounded-2xl border border-zinc-300 bg-zinc-200 p-4 shadow-sm">
       <p className="mb-4 text-sm font-semibold text-zinc-900">{label}</p>
 
-      <div className="grid grid-cols-2 gap-3">
-        {(["A", "B"] as const).map((contestant) => {
-          const inputId = `${groupName}-${contestant}`;
+      <div className="flex items-center gap-4">
+        <div className="grid min-w-0 flex-1 grid-cols-2 gap-3">
+          {(["A", "B"] as const).map((contestant) => {
+            const inputId = `${groupName}-${contestant}`;
 
-          return (
-            <label
-              key={contestant}
-              htmlFor={inputId}
-              className={`flex cursor-pointer items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-semibold transition ${
-                selected === contestant
-                  ? "border-zinc-900 bg-zinc-900 text-white"
-                  : "border-zinc-300 bg-white text-zinc-900"
-              }`}
-            >
-              <input
-                id={inputId}
-                type="radio"
-                name={groupName}
-                value={contestant}
-                checked={selected === contestant}
-                onChange={() => onSelect(contestant)}
-                className="sr-only"
-              />
-              Contestant {contestant}
-            </label>
-          );
-        })}
+            return (
+              <label
+                key={contestant}
+                htmlFor={inputId}
+                className={`flex cursor-pointer items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-semibold transition ${
+                  selected === contestant
+                    ? "border-zinc-900 bg-zinc-900 text-white"
+                    : "border-zinc-300 bg-white text-zinc-900"
+                }`}
+              >
+                <input
+                  id={inputId}
+                  type="radio"
+                  name={groupName}
+                  value={contestant}
+                  checked={selected === contestant}
+                  onChange={() => onSelect(contestant)}
+                  className="sr-only"
+                />
+                Contestant {contestant}
+              </label>
+            );
+          })}
+        </div>
+
+        <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl border border-zinc-300 bg-white shadow-sm">
+          <Image
+            src={imageSrc}
+            alt={imageAlt}
+            fill
+            className="object-cover"
+            sizes="96px"
+          />
+        </div>
       </div>
     </div>
   );
@@ -110,6 +127,8 @@ export function HonourableMentionsStep({
             key={mention.id}
             id={mention.id}
             label={mention.label}
+            imageSrc={mention.imageSrc}
+            imageAlt={mention.imageAlt}
             selected={draft.honourableMentions[mention.id]}
             onSelect={(winner) => updateMention(mention.id, winner)}
           />

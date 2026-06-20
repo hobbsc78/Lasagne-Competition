@@ -45,10 +45,14 @@ export const HONOURABLE_MENTIONS = [
   {
     id: "cheesePull",
     label: "Best cheese pull",
+    imageSrc: "/images/cheese-pull.jpeg",
+    imageAlt: "Best cheese pull",
   },
   {
     id: "instaWorthy",
     label: "Most Insta worthy",
+    imageSrc: "/images/insta.jpeg",
+    imageAlt: "Most Insta worthy",
   },
 ] as const;
 
